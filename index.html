@@ -18,6 +18,8 @@
         }
         #result {
             margin-top: 20px;
+            font-size: 1.5em;
+            color: green;
         }
     </style>
 </head>
@@ -32,7 +34,11 @@
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" } // 후면 카메라 사용
+                    video: { 
+                        facingMode: "environment", // 후면 카메라 사용
+                        width: { ideal: 1280 },    // 카메라 해상도 설정
+                        height: { ideal: 720 }
+                    }
                 });
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
@@ -49,13 +55,19 @@
                     type: "LiveStream",
                     target: document.querySelector('#video'), // 비디오 태그에 카메라 스트림을 표시
                     constraints: {
-                        facingMode: "environment" // 후면 카메라 사용
+                        facingMode: "environment", // 후면 카메라 사용
+                        width: 1280,    // 해상도 설정
+                        height: 720
                     }
                 },
                 decoder: {
                     readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "code_39_reader"] // 지원할 바코드 유형
                 },
-                locate: true // 바코드 위치 자동 탐지
+                locate: true, // 바코드 위치 자동 탐지
+                locator: {
+                    patchSize: "medium", // 패치 크기 (small, medium, large)
+                    halfSample: true
+                }
             }, function(err) {
                 if (err) {
                     console.log(err);
@@ -69,6 +81,7 @@
                 var code = result.codeResult.code;
                 document.getElementById("result").innerText = "Barcode detected: " + code;
                 console.log("Barcode detected: ", code);
+                Quagga.stop(); // 바코드 감지 시 스캔 멈춤
             });
         }
 
