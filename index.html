@@ -90,9 +90,10 @@
                 Quagga.start(); // 바코드 스캔 시작
             });
 
+            // 바코드가 인식되었을 때 실행되는 콜백 함수
             Quagga.onDetected(function(result) {
-                var code = result.codeResult.code;
-                document.getElementById("result").innerText = "Barcode detected: " + code;
+                var code = result.codeResult.code; // 인식된 바코드 코드 값
+                document.getElementById("result").innerText = "Barcode detected: " + code; // 바코드 번호 표시
                 console.log("Barcode detected: ", code);
                 Quagga.stop(); // 바코드 감지 시 스캔 멈춤
             });
