@@ -12,18 +12,9 @@
             padding: 0;
             text-align: center;
         }
-        #video {
+        video {
             width: 100%;
             height: auto;
-        }
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 2px solid red;
-            box-sizing: border-box;
         }
         #result {
             margin-top: 20px;
@@ -33,63 +24,57 @@
 <body>
 
     <h1>Barcode Scanner</h1>
-    <div style="position: relative;">
-        <video id="video" autoplay></video>
-        <canvas id="overlay"></canvas>
-    </div>
+    <video id="video" autoplay></video>
     <p id="result">Waiting for barcode...</p>
 
     <script>
-        // Quagga 초기화
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#video'), // 카메라 스트림을 연결할 비디오 요소
-                constraints: {
-                    facingMode: "environment" // 후면 카메라 사용
-                }
-            },
-            decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "code_39_reader"] // 지원하는 바코드 유형
-            },
-            locate: true // 바코드 위치 자동 탐지
-        }, function(err) {
-            if (err) {
-                console.log(err);
-                return;
+        // 비디오 스트림을 연결하는 함수
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" } // 후면 카메라 사용
+                });
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
             }
-            console.log("Initialization finished. Ready to start");
-            Quagga.start(); // 바코드 스캔 시작
-        });
+        }
 
-        // 바코드가 감지되면 실행되는 콜백 함수
-        Quagga.onDetected(function(result) {
-            var code = result.codeResult.code; // 인식된 바코드 코드 값
-            document.getElementById("result").innerText = "Barcode detected: " + code;
-            console.log("Barcode detected: ", code);
-            Quagga.stop(); // 바코드가 감지되면 스캔 멈춤
-        });
-
-        // 바코드 위치 추적을 위한 그리기 설정
-        Quagga.onProcessed(function(result) {
-            var drawingCtx = Quagga.canvas.ctx.overlay,
-                drawingCanvas = Quagga.canvas.dom.overlay;
-
-            if (result) {
-                if (result.boxes) {
-                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                    result.boxes.filter(function (box) {
-                        return box !== result.box;
-                    }).forEach(function (box) {
-                        Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-                    });
+        // Quagga 초기화 및 바코드 스캔
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#video'), // 비디오 태그에 카메라 스트림을 표시
+                    constraints: {
+                        facingMode: "environment" // 후면 카메라 사용
+                    }
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "code_39_reader"] // 지원할 바코드 유형
+                },
+                locate: true // 바코드 위치 자동 탐지
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    return;
                 }
+                console.log("Initialization finished. Ready to start");
+                Quagga.start(); // 바코드 스캔 시작
+            });
 
-                if (result.box) {
-                    Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "red", lineWidth: 2});
-                }
-            }
+            Quagga.onDetected(function(result) {
+                var code = result.codeResult.code;
+                document.getElementById("result").innerText = "Barcode detected: " + code;
+                console.log("Barcode detected: ", code);
+            });
+        }
+
+        // 카메라 시작
+        startCamera().then(() => {
+            startScanner(); // 카메라가 성공적으로 시작된 후 Quagga를 시작
         });
     </script>
 
