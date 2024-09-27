@@ -71,19 +71,26 @@
                         facingMode: "environment", // 후면 카메라 사용
                         width: 1280,    // 해상도 설정
                         height: 720
+                    },
+                    area: { // 바코드 스캔할 영역 지정
+                        top: "30%",    // 가이드 박스의 상단에서부터
+                        right: "10%",  // 오른쪽 여백
+                        left: "10%",   // 왼쪽 여백
+                        bottom: "30%"  // 가이드 박스의 하단에서부터
                     }
+                },
+                locator: {
+                    patchSize: "large", // 바코드 인식 정확도를 높이기 위해 패치 크기 설정
+                    halfSample: false   // 성능을 위해 절반 샘플링 비활성화
                 },
                 decoder: {
                     readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "code_39_reader"] // 지원할 바코드 유형
                 },
                 locate: true, // 바코드 위치 자동 탐지
-                locator: {
-                    patchSize: "medium", // 패치 크기 (small, medium, large)
-                    halfSample: true
-                }
+                frequency: 10 // 스캔 빈도 설정
             }, function(err) {
                 if (err) {
-                    console.log(err);
+                    console.error("Initialization error: ", err);
                     return;
                 }
                 console.log("Initialization finished. Ready to start");
