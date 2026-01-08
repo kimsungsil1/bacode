@@ -354,6 +354,35 @@
       }
     }
 
+    function findValueTextElement(svgElement) {
+      const textElements = Array.from(svgElement.querySelectorAll("text")).filter(
+        (textNode) => textNode.getAttribute("data-role") !== "label"
+      );
+      if (!textElements.length) {
+        return null;
+      }
+      return textElements.reduce((currentMax, textNode) => {
+        const yAttr = Number.parseFloat(textNode.getAttribute("y"));
+        const currentMaxY = currentMax
+          ? Number.parseFloat(currentMax.getAttribute("y"))
+          : Number.NaN;
+        if (Number.isFinite(yAttr) && Number.isFinite(currentMaxY)) {
+          return yAttr > currentMaxY ? textNode : currentMax;
+        }
+        if (Number.isFinite(yAttr) && !Number.isFinite(currentMaxY)) {
+          return textNode;
+        }
+        if (!Number.isFinite(yAttr) && Number.isFinite(currentMaxY)) {
+          return currentMax;
+        }
+        const currentBox = currentMax ? currentMax.getBBox() : { y: 0, height: 0 };
+        const textBox = textNode.getBBox();
+        const currentBottom = currentBox.y + currentBox.height;
+        const textBottom = textBox.y + textBox.height;
+        return textBottom > currentBottom ? textNode : currentMax;
+      }, null);
+    }
+
     function updateBarcode() {
       const data = barcodeInput.value.trim();
       const barWidth = toNumber(barWidthInput.value);
@@ -399,18 +428,23 @@
         if (labelText && showLabel) {
           const currentHeight = Number(barcodeSvg.getAttribute("height")) || 0;
           const currentWidth = Number(barcodeSvg.getAttribute("width")) || 0;
-          const newHeight = currentHeight + LABEL_GAP + fontSizeValue;
-
-          barcodeSvg.setAttribute("height", String(newHeight));
-          if (currentWidth) {
-            barcodeSvg.setAttribute("viewBox", `0 0 ${currentWidth} ${newHeight}`);
-          }
+          const viewBox = barcodeSvg.getAttribute("viewBox");
+          const viewBoxParts = viewBox ? viewBox.split(/\s+/).map((value) => Number(value)) : [];
+          const viewBoxWidth = viewBoxParts.length === 4 ? viewBoxParts[2] : currentWidth;
+          const valueTextElement = findValueTextElement(barcodeSvg);
+          const valueTextY = valueTextElement
+            ? Number.parseFloat(valueTextElement.getAttribute("y"))
+            : Number.NaN;
+          const barcodeBox = barcodeSvg.getBBox();
+          const barcodeBottomY = barcodeBox.y + barcodeBox.height;
+          const baseY = Number.isFinite(valueTextY) ? valueTextY : barcodeBottomY;
+          const labelY = baseY + LABEL_GAP + fontSizeValue;
 
           const textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
           textElement.setAttribute("data-role", "label");
           textElement.setAttribute("x", "50%");
           textElement.setAttribute("text-anchor", "middle");
-          textElement.setAttribute("y", String(currentHeight + LABEL_GAP + fontSizeValue));
+          textElement.setAttribute("y", String(labelY));
           textElement.setAttribute("fill", "#111827");
           textElement.setAttribute("font-size", String(fontSizeValue));
           textElement.setAttribute(
@@ -419,6 +453,15 @@
           );
           textElement.textContent = labelText;
           barcodeSvg.appendChild(textElement);
+
+          const labelBox = textElement.getBBox();
+          const labelBottom = labelBox.y + labelBox.height;
+          const newHeight = Math.max(currentHeight, labelBottom);
+
+          barcodeSvg.setAttribute("height", String(newHeight));
+          if (viewBoxWidth) {
+            barcodeSvg.setAttribute("viewBox", `0 0 ${viewBoxWidth} ${newHeight}`);
+          }
         }
 
         setStatus("");
