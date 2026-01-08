@@ -70,7 +70,7 @@
 
     .field {
       display: grid;
-      gap: 6px;
+      gap: 8px;
     }
 
     label {
@@ -94,8 +94,14 @@
       outline-offset: 2px;
     }
 
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     input[type="number"] {
-      text-align: right;
+      -moz-appearance: textfield;
     }
 
     .toggle {
@@ -108,7 +114,51 @@
     .option-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 16px;
+    }
+
+    @media (max-width: 720px) {
+      .option-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) 48px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .stepper button {
+      height: 48px;
+      border: none;
+      background: #eef2ff;
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .stepper button:active {
+      background: #e0e7ff;
+    }
+
+    .stepper input {
+      height: 48px;
+      border: none;
+      text-align: center;
+      font-size: 17px;
+      padding: 0 10px;
+    }
+
+    .stepper input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
     }
 
     .status {
@@ -136,14 +186,6 @@
       display: grid;
       justify-items: center;
       background: #fff;
-    }
-
-    .barcode-label {
-      margin-top: 6px;
-      font-size: 14px;
-      color: var(--text);
-      text-align: center;
-      word-break: break-word;
     }
 
     .btn-row {
@@ -190,26 +232,48 @@
             <input id="barcode-data" type="text" autocomplete="off" placeholder="예: ALMNDYOUNG-001" />
           </div>
           <div class="field">
-            <label for="display-text">표시 텍스트 (선택)</label>
+            <label for="display-text">표시 텍스트 (라벨용)</label>
             <input id="display-text" type="text" autocomplete="off" placeholder="예: 아몬드영" />
+          </div>
+          <div class="field">
+            <label class="toggle" for="display-label">
+              <input id="display-label" type="checkbox" checked />
+              라벨 표시
+            </label>
           </div>
 
           <div class="option-grid">
             <div class="field">
               <label for="bar-width">폭 (Bar width)</label>
-              <input id="bar-width" type="number" min="0.1" step="0.1" value="2" />
+              <div class="stepper" data-stepper>
+                <button type="button" data-step="down" aria-label="바코드 폭 줄이기">-</button>
+                <input id="bar-width" type="number" min="0.5" max="6" step="0.1" value="2" />
+                <button type="button" data-step="up" aria-label="바코드 폭 늘리기">+</button>
+              </div>
             </div>
             <div class="field">
               <label for="bar-height">높이 (Height px)</label>
-              <input id="bar-height" type="number" min="10" step="1" value="80" />
+              <div class="stepper" data-stepper>
+                <button type="button" data-step="down" aria-label="바코드 높이 줄이기">-</button>
+                <input id="bar-height" type="number" min="20" max="300" step="5" value="80" />
+                <button type="button" data-step="up" aria-label="바코드 높이 늘리기">+</button>
+              </div>
             </div>
             <div class="field">
               <label for="bar-margin">여백 (Margin px)</label>
-              <input id="bar-margin" type="number" min="0" step="1" value="10" />
+              <div class="stepper" data-stepper>
+                <button type="button" data-step="down" aria-label="바코드 여백 줄이기">-</button>
+                <input id="bar-margin" type="number" min="0" max="50" step="1" value="10" />
+                <button type="button" data-step="up" aria-label="바코드 여백 늘리기">+</button>
+              </div>
             </div>
             <div class="field">
               <label for="font-size">폰트 크기 (Font size)</label>
-              <input id="font-size" type="number" min="8" step="1" value="14" />
+              <div class="stepper" data-stepper>
+                <button type="button" data-step="down" aria-label="폰트 크기 줄이기">-</button>
+                <input id="font-size" type="number" min="8" max="40" step="1" value="14" />
+                <button type="button" data-step="up" aria-label="폰트 크기 늘리기">+</button>
+              </div>
             </div>
           </div>
 
@@ -225,8 +289,7 @@
         <div class="preview">
           <div class="preview-stage">
             <div class="barcode-wrap" id="barcode-wrap">
-              <svg id="barcode"></svg>
-              <div id="label-text" class="barcode-label"></div>
+              <svg id="barcodeSvg"></svg>
             </div>
           </div>
           <div class="btn-row">
@@ -250,9 +313,9 @@
     const barMarginInput = document.getElementById("bar-margin");
     const fontSizeInput = document.getElementById("font-size");
     const displayValueToggle = document.getElementById("display-value");
+    const displayLabelToggle = document.getElementById("display-label");
 
-    const barcodeSvg = document.getElementById("barcode");
-    const labelText = document.getElementById("label-text");
+    const barcodeSvg = document.getElementById("barcodeSvg");
     const status = document.getElementById("status");
     const copyStatus = document.getElementById("copy-status");
 
@@ -262,10 +325,15 @@
     const canvas = document.getElementById("png-canvas");
 
     const BARCODE_FORMAT = "CODE128";
+    const LABEL_GAP = 8;
 
     function toNumber(value) {
       const parsed = Number(value);
       return Number.isFinite(parsed) ? parsed : NaN;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
     }
 
     function sanitizeFilename(text) {
@@ -279,10 +347,11 @@
       status.style.color = isError ? "var(--danger)" : "var(--muted)";
     }
 
-    function updateLabelText() {
-      const label = displayTextInput.value.trim();
-      labelText.textContent = label;
-      labelText.style.display = label ? "block" : "none";
+    function removeExistingLabel() {
+      const existingLabel = barcodeSvg.querySelector("text[data-role='label']");
+      if (existingLabel) {
+        existingLabel.remove();
+      }
     }
 
     function updateBarcode() {
@@ -292,9 +361,10 @@
       const barMargin = toNumber(barMarginInput.value);
       const fontSize = toNumber(fontSizeInput.value);
       const displayValue = displayValueToggle.checked;
+      const labelText = displayTextInput.value.trim();
+      const showLabel = displayLabelToggle.checked;
 
       copyStatus.textContent = "";
-      updateLabelText();
 
       if (!data) {
         barcodeSvg.innerHTML = "";
@@ -302,22 +372,55 @@
         return;
       }
 
-      if (![barWidth, barHeight, barMargin, fontSize].every((value) => Number.isFinite(value) && value >= 0)) {
-        setStatus("옵션 값은 0 이상의 숫자여야 합니다.");
+      if (![barWidth, barHeight, barMargin, fontSize].every((value) => Number.isFinite(value))) {
+        setStatus("옵션 값은 숫자여야 합니다.");
         return;
       }
 
       try {
+        const widthValue = clamp(barWidth, 0.5, 6);
+        const heightValue = clamp(barHeight, 20, 300);
+        const marginValue = clamp(barMargin, 0, 50);
+        const fontSizeValue = clamp(fontSize, 8, 40);
+
         JsBarcode(barcodeSvg, data, {
           format: BARCODE_FORMAT,
           lineColor: "#111827",
           background: "#ffffff",
-          width: Math.max(0.1, barWidth),
-          height: Math.max(10, barHeight),
-          margin: Math.max(0, barMargin),
+          width: widthValue,
+          height: heightValue,
+          margin: marginValue,
           displayValue,
-          fontSize: Math.max(8, fontSize)
+          fontSize: fontSizeValue
         });
+
+        removeExistingLabel();
+
+        if (labelText && showLabel) {
+          const currentHeight = Number(barcodeSvg.getAttribute("height")) || 0;
+          const currentWidth = Number(barcodeSvg.getAttribute("width")) || 0;
+          const newHeight = currentHeight + LABEL_GAP + fontSizeValue;
+
+          barcodeSvg.setAttribute("height", String(newHeight));
+          if (currentWidth) {
+            barcodeSvg.setAttribute("viewBox", `0 0 ${currentWidth} ${newHeight}`);
+          }
+
+          const textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          textElement.setAttribute("data-role", "label");
+          textElement.setAttribute("x", "50%");
+          textElement.setAttribute("text-anchor", "middle");
+          textElement.setAttribute("y", String(currentHeight + LABEL_GAP + fontSizeValue));
+          textElement.setAttribute("fill", "#111827");
+          textElement.setAttribute("font-size", String(fontSizeValue));
+          textElement.setAttribute(
+            "font-family",
+            "system-ui, -apple-system, \"Segoe UI\", sans-serif"
+          );
+          textElement.textContent = labelText;
+          barcodeSvg.appendChild(textElement);
+        }
+
         setStatus("");
       } catch (error) {
         barcodeSvg.innerHTML = "";
@@ -423,6 +526,28 @@
       }
     }
 
+    function setupStepper(stepper) {
+      const input = stepper.querySelector("input[type='number']");
+      const down = stepper.querySelector("button[data-step='down']");
+      const up = stepper.querySelector("button[data-step='up']");
+
+      function adjust(direction) {
+        const step = toNumber(input.step) || 1;
+        const min = toNumber(input.min);
+        const max = toNumber(input.max);
+        const current = toNumber(input.value) || 0;
+        const precision = (step.toString().split(".")[1] || "").length;
+        const delta = direction === "up" ? step : -step;
+        const nextValue = Number((current + delta).toFixed(Math.max(precision, 0)));
+        const clamped = clamp(nextValue, Number.isFinite(min) ? min : nextValue, Number.isFinite(max) ? max : nextValue);
+        input.value = clamped;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+
+      down.addEventListener("click", () => adjust("down"));
+      up.addEventListener("click", () => adjust("up"));
+    }
+
     const inputs = [
       barcodeInput,
       displayTextInput,
@@ -430,13 +555,16 @@
       barHeightInput,
       barMarginInput,
       fontSizeInput,
-      displayValueToggle
+      displayValueToggle,
+      displayLabelToggle
     ];
 
     inputs.forEach((input) => {
       input.addEventListener("input", updateBarcode);
       input.addEventListener("change", updateBarcode);
     });
+
+    document.querySelectorAll("[data-stepper]").forEach(setupStepper);
 
     downloadSvgButton.addEventListener("click", handleDownloadSvg);
     downloadPngButton.addEventListener("click", handleDownloadPng);
