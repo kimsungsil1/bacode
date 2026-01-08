@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>아몬드영 바코드 생성기</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <style>
     :root {
       --bg: #ffffff;
@@ -13,7 +12,7 @@
       --muted: #6b7280;
       --card: #f9fafb;
       --border: #e5e7eb;
-      --focus: #111827;
+      --focus: #0f172a;
       --point: #2563eb;
       --danger: #dc2626;
       --success: #16a34a;
@@ -79,7 +78,6 @@
     }
 
     input,
-    select,
     button {
       font: inherit;
       padding: 10px 12px;
@@ -90,7 +88,6 @@
     }
 
     input:focus,
-    select:focus,
     button:focus {
       outline: 2px solid var(--focus);
       outline-offset: 2px;
@@ -128,10 +125,6 @@
       border: 1px solid var(--point);
     }
 
-    .btn.danger {
-      background: var(--danger);
-    }
-
     .helper {
       font-size: 13px;
       color: var(--muted);
@@ -140,6 +133,7 @@
     .status {
       font-size: 14px;
       margin-top: 6px;
+      min-height: 20px;
     }
 
     .status.error {
@@ -151,13 +145,14 @@
     }
 
     .preview {
-      min-height: 200px;
+      min-height: 220px;
       display: grid;
       place-items: center;
       background: #fff;
       border-radius: 12px;
       border: 1px dashed var(--border);
       padding: 16px;
+      text-align: center;
     }
 
     .preview svg {
@@ -165,33 +160,11 @@
       height: auto;
     }
 
-    .history-list {
-      display: grid;
-      gap: 10px;
-      max-height: 260px;
-      overflow: auto;
-    }
-
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #fff;
-    }
-
-    .history-item button {
-      padding: 6px 8px;
-      font-size: 12px;
-    }
-
-    .history-item .meta {
-      display: grid;
-      gap: 4px;
-      font-size: 12px;
+    .label-text {
+      margin-top: 8px;
+      font-weight: 600;
+      text-align: center;
+      word-break: break-all;
     }
 
     .preset-group {
@@ -221,48 +194,43 @@
   <div class="page">
     <header>
       <h1>아몬드영 바코드 생성기</h1>
-      <p class="helper">입력값을 바꾸면 즉시 미리보기가 업데이트됩니다.</p>
+      <p class="helper">입력값과 옵션을 바꾸면 즉시 미리보기가 업데이트됩니다.</p>
     </header>
 
     <section class="layout">
       <div class="card">
         <h2>입력</h2>
         <div class="field">
-          <label for="barcode-type">바코드 타입</label>
-          <select id="barcode-type" aria-label="바코드 타입 선택">
-            <option value="CODE128">Code128</option>
-            <option value="EAN13">EAN-13</option>
-            <option value="EAN8">EAN-8</option>
-            <option value="UPC">UPC-A</option>
-            <option value="QR">QR Code</option>
-          </select>
+          <label for="barcode-data">바코드 데이터 (Code128)</label>
+          <input id="barcode-data" type="text" inputmode="text" autocomplete="off" placeholder="예: ALMONDYOUNG-001" />
+          <div id="validation" class="status" role="status" aria-live="polite"></div>
         </div>
 
         <div class="field">
-          <label for="barcode-data">바코드 데이터</label>
-          <input id="barcode-data" type="text" inputmode="text" autocomplete="off" />
-          <div id="validation" class="status" role="status" aria-live="polite"></div>
+          <label for="label-text">표시 텍스트(라벨용)</label>
+          <input id="label-text" type="text" inputmode="text" autocomplete="off" placeholder="예: 아몬드영 스티커" />
+          <p class="helper">라벨 텍스트는 바코드 아래에 별도로 표시됩니다.</p>
         </div>
 
         <div class="field">
           <label>프리셋</label>
           <div class="preset-group">
-            <button class="btn ghost" type="button" data-preset="label" aria-label="라벨 스티커용 프리셋">라벨 스티커용(작게)</button>
-            <button class="btn ghost" type="button" data-preset="box" aria-label="박스용 프리셋">박스용(크게)</button>
-            <button class="btn ghost" type="button" data-preset="compact" aria-label="컴팩트 프리셋">컴팩트(텍스트 없음)</button>
+            <button class="btn ghost" type="button" data-preset="small" aria-label="스티커용 프리셋">스티커(작게)</button>
+            <button class="btn ghost" type="button" data-preset="large" aria-label="박스용 프리셋">박스(크게)</button>
+            <button class="btn ghost" type="button" data-preset="default" aria-label="기본 프리셋">기본</button>
           </div>
         </div>
 
         <h2>옵션</h2>
         <div class="field">
-          <label for="scale">가로폭 (Scale)</label>
+          <label for="scale">가로 스케일 (Scale)</label>
           <input id="scale" type="range" min="1" max="6" value="2" />
           <span id="scale-value" class="helper">2</span>
         </div>
         <div class="field">
           <label for="height">높이 (Height)</label>
-          <input id="height" type="range" min="40" max="180" value="80" />
-          <span id="height-value" class="helper">80</span>
+          <input id="height" type="range" min="40" max="180" value="90" />
+          <span id="height-value" class="helper">90</span>
         </div>
         <div class="field">
           <label for="margin">여백 (Margin)</label>
@@ -272,40 +240,48 @@
         <div class="field inline">
           <label class="toggle" for="show-text">
             <input id="show-text" type="checkbox" checked />
-            사람 읽는 글자 표시
+            바코드 내부 텍스트 표시
           </label>
         </div>
         <div class="field">
-          <label for="font-size">글자 크기</label>
+          <label for="font-size">바코드 텍스트 폰트 크기</label>
           <input id="font-size" type="range" min="10" max="28" value="16" />
           <span id="font-size-value" class="helper">16</span>
+        </div>
+        <div class="field inline">
+          <label class="toggle" for="show-label">
+            <input id="show-label" type="checkbox" checked />
+            라벨 텍스트 표시
+          </label>
+        </div>
+        <div class="field">
+          <label for="label-font-size">라벨 폰트 크기</label>
+          <input id="label-font-size" type="range" min="10" max="32" value="18" />
+          <span id="label-font-size-value" class="helper">18</span>
         </div>
       </div>
 
       <div class="card">
         <h2>미리보기</h2>
-        <div class="preview" id="preview" aria-live="polite"></div>
+        <div class="preview" id="preview" aria-live="polite">
+          <p class="helper">바코드 데이터를 입력하면 여기에 미리보기가 표시됩니다.</p>
+        </div>
         <div class="inline" style="margin-top: 16px;">
           <button class="btn" id="download-png" aria-label="PNG 다운로드">PNG 다운로드</button>
           <button class="btn secondary" id="download-svg" aria-label="SVG 다운로드">SVG 다운로드</button>
-          <button class="btn ghost" id="copy-png" aria-label="PNG 복사">복사</button>
+          <button class="btn ghost" id="copy-png" aria-label="PNG 복사">PNG 복사</button>
         </div>
         <div id="copy-status" class="status" role="status" aria-live="polite"></div>
-      </div>
-
-      <div class="card">
-        <h2>최근 기록</h2>
-        <div class="history-list" id="history"></div>
       </div>
     </section>
 
     <footer>
       <p>사용법 안내</p>
       <ul>
-        <li>바코드 타입과 데이터를 입력하면 자동으로 미리보기가 갱신됩니다.</li>
-        <li>EAN/UPC 계열은 자리수에 맞게 체크디지트가 자동으로 보정됩니다.</li>
-        <li>PNG/SVG 다운로드와 복사 버튼을 활용해 원하는 출력으로 저장하세요.</li>
-        <li>최근 기록은 브라우저에 저장되며 클릭 시 즉시 불러옵니다.</li>
+        <li>바코드 데이터와 옵션을 입력하면 미리보기가 즉시 갱신됩니다.</li>
+        <li>라벨 텍스트는 바코드 표시 여부와 상관없이 별도로 출력할 수 있습니다.</li>
+        <li>PNG/SVG 다운로드 버튼으로 파일 저장이 가능합니다.</li>
+        <li>PNG 복사는 지원 브라우저에서만 동작하며 실패 시 안내가 표시됩니다.</li>
       </ul>
     </footer>
   </div>
@@ -313,12 +289,11 @@
   <canvas id="png-canvas" style="display:none"></canvas>
 
   <script>
-    const barcodeType = document.getElementById("barcode-type");
     const barcodeData = document.getElementById("barcode-data");
+    const labelText = document.getElementById("label-text");
     const preview = document.getElementById("preview");
     const validation = document.getElementById("validation");
     const copyStatus = document.getElementById("copy-status");
-    const historyList = document.getElementById("history");
     const downloadPng = document.getElementById("download-png");
     const downloadSvg = document.getElementById("download-svg");
     const copyPng = document.getElementById("copy-png");
@@ -329,29 +304,31 @@
       height: document.getElementById("height"),
       margin: document.getElementById("margin"),
       showText: document.getElementById("show-text"),
-      fontSize: document.getElementById("font-size")
+      fontSize: document.getElementById("font-size"),
+      showLabel: document.getElementById("show-label"),
+      labelFontSize: document.getElementById("label-font-size")
     };
 
     const optionValueLabels = {
       scale: document.getElementById("scale-value"),
       height: document.getElementById("height-value"),
       margin: document.getElementById("margin-value"),
-      fontSize: document.getElementById("font-size-value")
+      fontSize: document.getElementById("font-size-value"),
+      labelFontSize: document.getElementById("label-font-size-value")
     };
 
     const PRESETS = {
-      label: { scale: 1, height: 50, margin: 4, showText: true, fontSize: 12 },
-      box: { scale: 3, height: 120, margin: 10, showText: true, fontSize: 20 },
-      compact: { scale: 2, height: 70, margin: 6, showText: false, fontSize: 14 }
+      small: { scale: 1, height: 55, margin: 4, showText: true, fontSize: 12, showLabel: true, labelFontSize: 14 },
+      large: { scale: 3, height: 130, margin: 12, showText: true, fontSize: 22, showLabel: true, labelFontSize: 22 },
+      default: { scale: 2, height: 90, margin: 8, showText: true, fontSize: 16, showLabel: true, labelFontSize: 18 }
     };
-
-    const HISTORY_KEY = "almondyoung-barcode-history";
 
     function updateOptionLabels() {
       optionValueLabels.scale.textContent = optionElements.scale.value;
       optionValueLabels.height.textContent = optionElements.height.value;
       optionValueLabels.margin.textContent = optionElements.margin.value;
       optionValueLabels.fontSize.textContent = optionElements.fontSize.value;
+      optionValueLabels.labelFontSize.textContent = optionElements.labelFontSize.value;
     }
 
     function getOptions() {
@@ -360,83 +337,10 @@
         height: Number(optionElements.height.value),
         margin: Number(optionElements.margin.value),
         displayValue: optionElements.showText.checked,
-        fontSize: Number(optionElements.fontSize.value)
+        fontSize: Number(optionElements.fontSize.value),
+        showLabel: optionElements.showLabel.checked,
+        labelFontSize: Number(optionElements.labelFontSize.value)
       };
-    }
-
-    function isNumericType(type) {
-      return ["EAN13", "EAN8", "UPC"].includes(type);
-    }
-
-    function computeCheckDigit(type, digits) {
-      const numbers = digits.split("").map(Number);
-      let sum = 0;
-      if (type === "EAN13" || type === "UPC") {
-        numbers.forEach((num, index) => {
-          const position = index + 1;
-          sum += position % 2 === 0 ? num * 3 : num;
-        });
-      } else if (type === "EAN8") {
-        numbers.forEach((num, index) => {
-          const position = index + 1;
-          sum += position % 2 === 0 ? num : num * 3;
-        });
-      }
-      return (10 - (sum % 10)) % 10;
-    }
-
-    function normalizeData(type, value) {
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return { value: "", warning: "" };
-      }
-
-      if (isNumericType(type)) {
-        if (!/^\d+$/.test(trimmed)) {
-          return { value: trimmed, warning: "숫자 전용 타입에는 숫자만 입력할 수 있습니다." };
-        }
-
-        if (type === "EAN13") {
-          if (trimmed.length === 12) {
-            const digit = computeCheckDigit(type, trimmed);
-            return { value: trimmed + digit, warning: "체크디지트를 자동으로 보정했습니다." };
-          }
-          if (trimmed.length === 13) {
-            const expected = computeCheckDigit(type, trimmed.slice(0, 12));
-            if (expected !== Number(trimmed[12])) {
-              return { value: trimmed, warning: "체크디지트가 일치하지 않습니다." };
-            }
-          }
-        }
-
-        if (type === "EAN8") {
-          if (trimmed.length === 7) {
-            const digit = computeCheckDigit(type, trimmed);
-            return { value: trimmed + digit, warning: "체크디지트를 자동으로 보정했습니다." };
-          }
-          if (trimmed.length === 8) {
-            const expected = computeCheckDigit(type, trimmed.slice(0, 7));
-            if (expected !== Number(trimmed[7])) {
-              return { value: trimmed, warning: "체크디지트가 일치하지 않습니다." };
-            }
-          }
-        }
-
-        if (type === "UPC") {
-          if (trimmed.length === 11) {
-            const digit = computeCheckDigit(type, trimmed);
-            return { value: trimmed + digit, warning: "체크디지트를 자동으로 보정했습니다." };
-          }
-          if (trimmed.length === 12) {
-            const expected = computeCheckDigit(type, trimmed.slice(0, 11));
-            if (expected !== Number(trimmed[11])) {
-              return { value: trimmed, warning: "체크디지트가 일치하지 않습니다." };
-            }
-          }
-        }
-      }
-
-      return { value: trimmed, warning: "" };
     }
 
     function setStatus(message, type = "") {
@@ -449,30 +353,26 @@
       copyStatus.className = type ? `status ${type}` : "status";
     }
 
-    function renderBarcode(type, data, options) {
+    function renderEmptyState() {
+      preview.innerHTML = "<p class=\"helper\">바코드 데이터를 입력하면 여기에 미리보기가 표시됩니다.</p>";
+    }
+
+    function renderLabelText(text, options) {
+      if (!options.showLabel || !text.trim()) return null;
+      const label = document.createElement("div");
+      label.className = "label-text";
+      label.textContent = text;
+      label.style.fontSize = `${options.labelFontSize}px`;
+      return label;
+    }
+
+    function renderBarcode(data, options) {
       preview.innerHTML = "";
 
-      if (!data) {
-        setStatus("데이터를 입력해주세요.");
+      if (!data.trim()) {
+        renderEmptyState();
+        setStatus("바코드 데이터를 입력해주세요.");
         return null;
-      }
-
-      if (type === "QR") {
-        const qr = qrcode(0, "M");
-        qr.addData(data);
-        qr.make();
-        const cellSize = Math.max(2, options.scale * 4);
-        const margin = options.margin;
-        const svgString = qr.createSvgTag({
-          cellSize,
-          margin
-        });
-        preview.innerHTML = svgString;
-        const svg = preview.querySelector("svg");
-        if (svg) {
-          svg.setAttribute("aria-label", "QR 코드 미리보기");
-        }
-        return svgString;
       }
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -480,42 +380,31 @@
 
       try {
         JsBarcode(svg, data, {
-          format: type,
+          format: "CODE128",
           width: options.scale,
           height: options.height,
           margin: options.margin,
           displayValue: options.displayValue,
           fontSize: options.fontSize
         });
-        return svg.outerHTML;
       } catch (error) {
+        renderEmptyState();
         setStatus("바코드를 생성할 수 없습니다. 입력값을 확인해주세요.", "error");
-        console.error(error);
         return null;
       }
+
+      const label = renderLabelText(labelText.value, options);
+      if (label) {
+        preview.appendChild(label);
+      }
+
+      setStatus("", "");
+      return svg;
     }
 
     function updatePreview() {
-      const type = barcodeType.value;
-      const rawValue = barcodeData.value;
-      const normalized = normalizeData(type, rawValue);
       const options = getOptions();
-
-      if (normalized.warning) {
-        setStatus(normalized.warning, /일치하지 않습니다/.test(normalized.warning) ? "error" : "success");
-      } else {
-        setStatus("", "");
-      }
-
-      const svgString = renderBarcode(type, normalized.value, options);
-
-      if (svgString) {
-        saveHistory({
-          type,
-          data: normalized.value,
-          options
-        });
-      }
+      renderBarcode(barcodeData.value, options);
     }
 
     function createDownloadLink(blob, filename) {
@@ -559,6 +448,8 @@
           if (blob) {
             createDownloadLink(blob, "barcode.png");
             setCopyStatus("PNG 다운로드를 시작했습니다.", "success");
+          } else {
+            setCopyStatus("PNG 변환에 실패했습니다.", "error");
           }
           URL.revokeObjectURL(url);
         });
@@ -611,9 +502,10 @@
               await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
               setCopyStatus("PNG가 클립보드에 복사되었습니다.", "success");
             } catch (error) {
-              console.error(error);
               setCopyStatus("복사에 실패했습니다.", "error");
             }
+          } else {
+            setCopyStatus("복사용 PNG 변환에 실패했습니다.", "error");
           }
           URL.revokeObjectURL(url);
         });
@@ -627,98 +519,26 @@
       img.src = url;
     }
 
-    function loadHistory() {
-      const stored = localStorage.getItem(HISTORY_KEY);
-      if (!stored) return [];
-      try {
-        return JSON.parse(stored);
-      } catch (error) {
-        console.error(error);
-        return [];
-      }
-    }
-
-    function saveHistory(entry) {
-      if (!entry.data) return;
-      const list = loadHistory();
-      const serialized = JSON.stringify(entry);
-      if (list[0] && JSON.stringify(list[0]) === serialized) {
-        return;
-      }
-      const updated = [entry, ...list.filter((item) => JSON.stringify(item) !== serialized)].slice(0, 10);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-      renderHistory(updated);
-    }
-
-    function renderHistory(list = loadHistory()) {
-      historyList.innerHTML = "";
-      if (!list.length) {
-        historyList.innerHTML = "<p class=\"helper\">아직 기록이 없습니다.</p>";
-        return;
-      }
-
-      list.forEach((item, index) => {
-        const row = document.createElement("div");
-        row.className = "history-item";
-
-        const meta = document.createElement("div");
-        meta.className = "meta";
-        meta.innerHTML = `<strong>${item.type}</strong><span>${item.data}</span>`;
-
-        const actions = document.createElement("div");
-        actions.className = "inline";
-
-        const loadButton = document.createElement("button");
-        loadButton.className = "btn ghost";
-        loadButton.type = "button";
-        loadButton.textContent = "불러오기";
-        loadButton.setAttribute("aria-label", "기록 불러오기");
-        loadButton.addEventListener("click", () => {
-          barcodeType.value = item.type;
-          barcodeData.value = item.data;
-          optionElements.scale.value = item.options.scale;
-          optionElements.height.value = item.options.height;
-          optionElements.margin.value = item.options.margin;
-          optionElements.showText.checked = item.options.displayValue;
-          optionElements.fontSize.value = item.options.fontSize;
-          updateOptionLabels();
-          updatePreview();
-        });
-
-        const deleteButton = document.createElement("button");
-        deleteButton.className = "btn danger";
-        deleteButton.type = "button";
-        deleteButton.textContent = "삭제";
-        deleteButton.setAttribute("aria-label", "기록 삭제");
-        deleteButton.addEventListener("click", () => {
-          const updated = list.filter((_, idx) => idx !== index);
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-          renderHistory(updated);
-        });
-
-        actions.appendChild(loadButton);
-        actions.appendChild(deleteButton);
-        row.appendChild(meta);
-        row.appendChild(actions);
-        historyList.appendChild(row);
-      });
+    function applyPreset(key) {
+      const preset = PRESETS[key];
+      if (!preset) return;
+      optionElements.scale.value = preset.scale;
+      optionElements.height.value = preset.height;
+      optionElements.margin.value = preset.margin;
+      optionElements.showText.checked = preset.showText;
+      optionElements.fontSize.value = preset.fontSize;
+      optionElements.showLabel.checked = preset.showLabel;
+      optionElements.labelFontSize.value = preset.labelFontSize;
+      updateOptionLabels();
+      updatePreview();
     }
 
     document.querySelectorAll("[data-preset]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const preset = PRESETS[button.dataset.preset];
-        optionElements.scale.value = preset.scale;
-        optionElements.height.value = preset.height;
-        optionElements.margin.value = preset.margin;
-        optionElements.showText.checked = preset.showText;
-        optionElements.fontSize.value = preset.fontSize;
-        updateOptionLabels();
-        updatePreview();
-      });
+      button.addEventListener("click", () => applyPreset(button.dataset.preset));
     });
 
-    barcodeType.addEventListener("change", updatePreview);
     barcodeData.addEventListener("input", updatePreview);
+    labelText.addEventListener("input", updatePreview);
     Object.values(optionElements).forEach((el) => {
       el.addEventListener("input", () => {
         updateOptionLabels();
@@ -731,8 +551,7 @@
     copyPng.addEventListener("click", copyAsPng);
 
     updateOptionLabels();
-    renderHistory();
-    updatePreview();
+    renderEmptyState();
   </script>
 </body>
 </html>
