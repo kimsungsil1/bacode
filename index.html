@@ -12,10 +12,9 @@
       --muted: #6b7280;
       --card: #f9fafb;
       --border: #e5e7eb;
-      --focus: #111827;
-      --point: #2563eb;
+      --primary: #111827;
+      --accent: #2563eb;
       --danger: #dc2626;
-      --success: #16a34a;
     }
 
     * {
@@ -30,7 +29,7 @@
     }
 
     .page {
-      max-width: 1200px;
+      max-width: 960px;
       margin: 0 auto;
       padding: 32px 20px 48px;
       display: grid;
@@ -39,8 +38,6 @@
 
     header {
       text-align: center;
-      display: grid;
-      gap: 8px;
     }
 
     h1 {
@@ -49,25 +46,26 @@
       font-weight: 700;
     }
 
-    .layout {
-      display: grid;
-      gap: 24px;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      padding: 24px;
       display: grid;
-      gap: 12px;
+      gap: 20px;
     }
 
-    .card h2 {
-      margin: 0;
-      font-size: 18px;
+    .layout {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     .field {
@@ -81,7 +79,6 @@
     }
 
     input,
-    select,
     button {
       font: inherit;
       padding: 10px 12px;
@@ -92,31 +89,13 @@
     }
 
     input:focus,
-    select:focus,
     button:focus {
-      outline: 2px solid var(--focus);
+      outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
 
     input[type="number"] {
       text-align: right;
-    }
-
-    .inline {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .size-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .size-grid input {
-      width: 100%;
     }
 
     .toggle {
@@ -126,39 +105,16 @@
       font-size: 14px;
     }
 
-    .btn {
-      cursor: pointer;
-      background: var(--point);
-      color: white;
-      border: none;
-      font-weight: 600;
-    }
-
-    .btn.secondary {
-      background: #0f172a;
-    }
-
-    .btn.ghost {
-      background: transparent;
-      color: var(--point);
-      border: 1px solid var(--point);
-    }
-
-    .helper {
-      font-size: 13px;
-      color: var(--muted);
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .status {
-      font-size: 14px;
-    }
-
-    .status.error {
+      font-size: 13px;
       color: var(--danger);
-    }
-
-    .status.success {
-      color: var(--success);
+      min-height: 18px;
     }
 
     .preview {
@@ -172,55 +128,51 @@
       place-items: center;
       background: #fff;
       border-radius: 12px;
-      border: 1px dashed var(--border);
-      padding: 16px;
-      overflow: auto;
-    }
-
-    .label-canvas {
-      background: #fff;
       border: 1px solid var(--border);
-      display: grid;
-      place-items: center;
-      position: relative;
+      padding: 16px;
     }
 
-    .label-note {
-      font-size: 12px;
-      color: var(--muted);
+    .barcode-wrap {
+      display: grid;
+      justify-items: center;
+      background: #fff;
+    }
+
+    .barcode-label {
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--text);
       text-align: center;
+      word-break: break-word;
     }
 
-    .preset-group {
+    .btn-row {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
-    }
-
-    .margin-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
-    footer {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.7;
+    .btn {
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-weight: 600;
     }
 
-    @media (max-width: 720px) {
-      .page {
-        padding: 24px 16px 40px;
-      }
+    .btn.secondary {
+      background: var(--primary);
+    }
 
-      .card {
-        padding: 16px;
-      }
+    .btn.ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
 
-      .margin-grid {
-        grid-template-columns: 1fr;
-      }
+    .helper {
+      font-size: 13px;
+      color: var(--muted);
     }
   </style>
 </head>
@@ -228,192 +180,86 @@
   <div class="page">
     <header>
       <h1>아몬드영 바코드 생성기</h1>
-      <p class="helper">입력과 옵션을 변경하면 즉시 미리보기가 갱신됩니다.</p>
     </header>
 
-    <section class="layout">
-      <div class="card">
-        <h2>입력</h2>
-        <div class="field">
-          <label for="barcode-data">바코드 데이터 (Code128)</label>
-          <input id="barcode-data" type="text" inputmode="text" autocomplete="off" placeholder="예: ALMNDYOUNG-001" />
-          <div id="validation" class="status" role="status" aria-live="polite"></div>
-        </div>
-
-        <div class="field">
-          <label for="label-text">표시 텍스트(라벨용)</label>
-          <input id="label-text" type="text" inputmode="text" autocomplete="off" placeholder="예: 아몬드영 기획팀" />
-        </div>
-
-        <div class="field inline">
-          <label class="toggle" for="show-label-text">
-            <input id="show-label-text" type="checkbox" checked />
-            라벨 텍스트 표시
-          </label>
-        </div>
-
-        <h2>사이즈 & 여백</h2>
-        <div class="size-grid">
+    <section class="card">
+      <div class="layout">
+        <div class="form">
           <div class="field">
-            <label for="width-cm">가로(cm)</label>
-            <input id="width-cm" type="number" min="0" step="0.1" value="6" />
+            <label for="barcode-data">바코드 데이터 (필수)</label>
+            <input id="barcode-data" type="text" autocomplete="off" placeholder="예: ALMNDYOUNG-001" />
           </div>
           <div class="field">
-            <label for="height-cm">세로(cm)</label>
-            <input id="height-cm" type="number" min="0" step="0.1" value="3" />
+            <label for="display-text">표시 텍스트 (선택)</label>
+            <input id="display-text" type="text" autocomplete="off" placeholder="예: 아몬드영" />
           </div>
-        </div>
-        <div class="field inline">
-          <label for="dpi">DPI</label>
-          <input id="dpi" type="number" min="72" step="1" value="300" />
-        </div>
-        <div class="field">
-          <label for="margin-all">전체 여백(cm)</label>
-          <input id="margin-all" type="number" min="0" step="0.1" value="0.2" />
-          <p class="helper">고급 여백을 켜면 개별 여백이 우선 적용됩니다.</p>
-        </div>
-        <div class="field inline">
-          <label class="toggle" for="use-advanced-margin">
-            <input id="use-advanced-margin" type="checkbox" />
-            여백 개별 설정
-          </label>
-        </div>
-        <div class="margin-grid" id="margin-grid" aria-hidden="true">
-          <div class="field">
-            <label for="margin-top">상단 여백(cm)</label>
-            <input id="margin-top" type="number" min="0" step="0.1" value="0.2" />
-          </div>
-          <div class="field">
-            <label for="margin-right">우측 여백(cm)</label>
-            <input id="margin-right" type="number" min="0" step="0.1" value="0.2" />
-          </div>
-          <div class="field">
-            <label for="margin-bottom">하단 여백(cm)</label>
-            <input id="margin-bottom" type="number" min="0" step="0.1" value="0.2" />
-          </div>
-          <div class="field">
-            <label for="margin-left">좌측 여백(cm)</label>
-            <input id="margin-left" type="number" min="0" step="0.1" value="0.2" />
-          </div>
-        </div>
 
-        <div class="field">
-          <label>프리셋</label>
-          <div class="preset-group">
-            <button class="btn ghost" type="button" data-preset="default">기본</button>
-            <button class="btn ghost" type="button" data-preset="sticker">스티커(작게)</button>
-            <button class="btn ghost" type="button" data-preset="box">박스(크게)</button>
-          </div>
-        </div>
-
-        <h2>옵션</h2>
-        <div class="field inline">
-          <label class="toggle" for="show-barcode-text">
-            <input id="show-barcode-text" type="checkbox" checked />
-            바코드 내부 텍스트 표시
-          </label>
-        </div>
-        <div class="field inline">
-          <label for="barcode-font-size">바코드 텍스트 크기(px)</label>
-          <input id="barcode-font-size" type="number" min="8" step="1" value="16" />
-        </div>
-        <div class="field inline">
-          <label for="label-font-size">라벨 텍스트 크기(px)</label>
-          <input id="label-font-size" type="number" min="8" step="1" value="14" />
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>미리보기</h2>
-        <div class="preview">
-          <div class="preview-stage" id="preview-stage">
-            <div class="label-canvas" id="label-canvas" aria-live="polite">
-              <span class="helper" id="empty-message">데이터를 입력하면 라벨이 표시됩니다.</span>
+          <div class="option-grid">
+            <div class="field">
+              <label for="bar-width">폭 (Bar width)</label>
+              <input id="bar-width" type="number" min="0.1" step="0.1" value="2" />
+            </div>
+            <div class="field">
+              <label for="bar-height">높이 (Height px)</label>
+              <input id="bar-height" type="number" min="10" step="1" value="80" />
+            </div>
+            <div class="field">
+              <label for="bar-margin">여백 (Margin px)</label>
+              <input id="bar-margin" type="number" min="0" step="1" value="10" />
+            </div>
+            <div class="field">
+              <label for="font-size">폰트 크기 (Font size)</label>
+              <input id="font-size" type="number" min="8" step="1" value="14" />
             </div>
           </div>
-          <div class="label-note" id="size-note"></div>
+
+          <div class="field">
+            <label class="toggle" for="display-value">
+              <input id="display-value" type="checkbox" checked />
+              바코드 아래 숫자 표시 (Display value)
+            </label>
+          </div>
+          <div id="status" class="status" role="status" aria-live="polite"></div>
         </div>
-        <div class="inline">
-          <button class="btn" id="download-png" type="button">PNG 다운로드</button>
-          <button class="btn secondary" id="download-svg" type="button">SVG 다운로드</button>
-          <button class="btn ghost" id="copy-png" type="button">PNG 복사</button>
+
+        <div class="preview">
+          <div class="preview-stage">
+            <div class="barcode-wrap" id="barcode-wrap">
+              <svg id="barcode"></svg>
+              <div id="label-text" class="barcode-label"></div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="download-png" type="button">PNG 다운로드</button>
+            <button class="btn secondary" id="download-svg" type="button">SVG 다운로드</button>
+            <button class="btn ghost" id="copy-png" type="button">PNG 복사</button>
+          </div>
+          <div id="copy-status" class="helper" role="status" aria-live="polite"></div>
         </div>
-        <div id="copy-status" class="status" role="status" aria-live="polite"></div>
       </div>
     </section>
-
-    <footer>
-      <p><strong>사용법 안내</strong></p>
-      <ul>
-        <li>바코드 데이터와 라벨 텍스트를 입력하면 즉시 미리보기가 갱신됩니다.</li>
-        <li>가로/세로/여백을 cm 단위로 입력하면 DPI 기준 픽셀 크기로 정확히 반영됩니다.</li>
-        <li>PNG/SVG 다운로드와 PNG 복사를 통해 출력물을 저장할 수 있습니다.</li>
-        <li>크기가 너무 작으면 경고가 표시되니 값을 키워주세요.</li>
-      </ul>
-    </footer>
   </div>
 
   <canvas id="png-canvas" style="display:none"></canvas>
 
   <script>
-    const barcodeDataInput = document.getElementById("barcode-data");
-    const labelTextInput = document.getElementById("label-text");
-    const showLabelText = document.getElementById("show-label-text");
-    const showBarcodeText = document.getElementById("show-barcode-text");
-    const barcodeFontSize = document.getElementById("barcode-font-size");
-    const labelFontSize = document.getElementById("label-font-size");
-    const widthCmInput = document.getElementById("width-cm");
-    const heightCmInput = document.getElementById("height-cm");
-    const dpiInput = document.getElementById("dpi");
-    const marginAllInput = document.getElementById("margin-all");
-    const useAdvancedMargin = document.getElementById("use-advanced-margin");
-    const marginGrid = document.getElementById("margin-grid");
-    const marginTopInput = document.getElementById("margin-top");
-    const marginRightInput = document.getElementById("margin-right");
-    const marginBottomInput = document.getElementById("margin-bottom");
-    const marginLeftInput = document.getElementById("margin-left");
+    const barcodeInput = document.getElementById("barcode-data");
+    const displayTextInput = document.getElementById("display-text");
+    const barWidthInput = document.getElementById("bar-width");
+    const barHeightInput = document.getElementById("bar-height");
+    const barMarginInput = document.getElementById("bar-margin");
+    const fontSizeInput = document.getElementById("font-size");
+    const displayValueToggle = document.getElementById("display-value");
 
-    const previewStage = document.getElementById("preview-stage");
-    const labelCanvas = document.getElementById("label-canvas");
-    const emptyMessage = document.getElementById("empty-message");
-    const validation = document.getElementById("validation");
+    const barcodeSvg = document.getElementById("barcode");
+    const labelText = document.getElementById("label-text");
+    const status = document.getElementById("status");
     const copyStatus = document.getElementById("copy-status");
-    const sizeNote = document.getElementById("size-note");
+
+    const downloadPngButton = document.getElementById("download-png");
+    const downloadSvgButton = document.getElementById("download-svg");
+    const copyPngButton = document.getElementById("copy-png");
     const canvas = document.getElementById("png-canvas");
-
-    const downloadPng = document.getElementById("download-png");
-    const downloadSvg = document.getElementById("download-svg");
-    const copyPng = document.getElementById("copy-png");
-
-    const PRESETS = {
-      default: {
-        widthCm: 6,
-        heightCm: 3,
-        marginCm: 0.2,
-        dpi: 300,
-        showBarcodeText: true,
-        barcodeFontSize: 16,
-        labelFontSize: 14
-      },
-      sticker: {
-        widthCm: 4,
-        heightCm: 2,
-        marginCm: 0.2,
-        dpi: 300,
-        showBarcodeText: true,
-        barcodeFontSize: 12,
-        labelFontSize: 12
-      },
-      box: {
-        widthCm: 8,
-        heightCm: 4,
-        marginCm: 0.3,
-        dpi: 300,
-        showBarcodeText: true,
-        barcodeFontSize: 20,
-        labelFontSize: 16
-      }
-    };
 
     const BARCODE_FORMAT = "CODE128";
 
@@ -422,215 +268,67 @@
       return Number.isFinite(parsed) ? parsed : NaN;
     }
 
-    function cmToPx(cm, dpi) {
-      return (cm / 2.54) * dpi;
-    }
-
-    function formatPx(value) {
-      return Math.round(value);
-    }
-
-    function setStatus(element, message, type = "") {
-      element.textContent = message;
-      element.className = type ? `status ${type}` : "status";
-    }
-
     function sanitizeFilename(text) {
       const trimmed = text.trim();
       if (!trimmed) return "barcode";
       return trimmed.replace(/[^a-z0-9\-_.]+/gi, "-").slice(0, 24) || "barcode";
     }
 
-    function getMargins() {
-      const useAdvanced = useAdvancedMargin.checked;
-      if (useAdvanced) {
-        return {
-          top: toNumber(marginTopInput.value),
-          right: toNumber(marginRightInput.value),
-          bottom: toNumber(marginBottomInput.value),
-          left: toNumber(marginLeftInput.value)
-        };
-      }
-
-      const all = toNumber(marginAllInput.value);
-      return { top: all, right: all, bottom: all, left: all };
+    function setStatus(message, isError = true) {
+      status.textContent = message;
+      status.style.color = isError ? "var(--danger)" : "var(--muted)";
     }
 
-    function validateInputs() {
-      const widthCm = toNumber(widthCmInput.value);
-      const heightCm = toNumber(heightCmInput.value);
-      const dpi = toNumber(dpiInput.value);
-      const margins = getMargins();
-
-      if (!widthCm || widthCm <= 0 || !heightCm || heightCm <= 0) {
-        return { valid: false, message: "가로/세로(cm)는 0보다 큰 값을 입력해주세요." };
-      }
-
-      if (!dpi || dpi <= 0) {
-        return { valid: false, message: "DPI는 0보다 큰 값을 입력해주세요." };
-      }
-
-      const marginValues = Object.values(margins);
-      if (marginValues.some((value) => !Number.isFinite(value) || value < 0)) {
-        return { valid: false, message: "여백은 0 이상의 숫자로 입력해주세요." };
-      }
-
-      if (margins.left + margins.right >= widthCm || margins.top + margins.bottom >= heightCm) {
-        return { valid: false, message: "여백 합이 라벨 크기보다 큽니다." };
-      }
-
-      return { valid: true, widthCm, heightCm, dpi, margins };
+    function updateLabelText() {
+      const label = displayTextInput.value.trim();
+      labelText.textContent = label;
+      labelText.style.display = label ? "block" : "none";
     }
 
-    function createBarcodeSvg(data, options) {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      JsBarcode(svg, data, {
-        format: BARCODE_FORMAT,
-        displayValue: options.displayValue,
-        fontSize: options.fontSize,
-        height: options.height,
-        margin: 0
-      });
-      return svg;
-    }
+    function updateBarcode() {
+      const data = barcodeInput.value.trim();
+      const barWidth = toNumber(barWidthInput.value);
+      const barHeight = toNumber(barHeightInput.value);
+      const barMargin = toNumber(barMarginInput.value);
+      const fontSize = toNumber(fontSizeInput.value);
+      const displayValue = displayValueToggle.checked;
 
-    function getSvgSize(svg) {
-      const widthAttr = svg.getAttribute("width");
-      const heightAttr = svg.getAttribute("height");
-      const width = widthAttr ? Number(widthAttr) : svg.getBBox().width;
-      const height = heightAttr ? Number(heightAttr) : svg.getBBox().height;
-      return { width, height };
-    }
-
-    function buildLabelSvg({
-      data,
-      label,
-      widthPx,
-      heightPx,
-      marginsPx,
-      showLabel,
-      showBarcodeValue,
-      barcodeFont,
-      labelFont,
-      labelGapPx
-    }) {
-      const labelTextHeight = showLabel && label ? labelFont * 1.4 : 0;
-      const availableWidth = widthPx - marginsPx.left - marginsPx.right;
-      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight - labelGapPx;
-
-      const barcodeSvg = createBarcodeSvg(data, {
-        displayValue: showBarcodeValue,
-        fontSize: barcodeFont,
-        height: Math.max(10, availableHeight)
-      });
-
-      const barcodeSize = getSvgSize(barcodeSvg);
-      const scaleX = availableWidth / barcodeSize.width;
-      const scaleY = availableHeight / barcodeSize.height;
-
-      const serializer = new XMLSerializer();
-      const barcodeContent = Array.from(barcodeSvg.childNodes)
-        .map((node) => serializer.serializeToString(node))
-        .join("");
-
-      const labelFontFamily = "Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif";
-      const labelTextY = marginsPx.top + availableHeight + labelGapPx + labelFont;
-      const labelText = showLabel && label ? `<text x="${widthPx / 2}" y="${labelTextY}" text-anchor="middle" font-size="${labelFont}" font-family="${labelFontFamily}" fill="#111827">${label}</text>` : "";
-
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx}" height="${heightPx}" viewBox="0 0 ${widthPx} ${heightPx}">
-  <rect width="100%" height="100%" fill="#ffffff" />
-  <g transform="translate(${marginsPx.left}, ${marginsPx.top}) scale(${scaleX}, ${scaleY})" aria-label="Code128 바코드">
-    ${barcodeContent}
-  </g>
-  ${labelText}
-</svg>`;
-    }
-
-    function updatePreview() {
-      const data = barcodeDataInput.value.trim();
-      const label = labelTextInput.value.trim();
-      const showLabel = showLabelText.checked;
-      const showBarcodeValue = showBarcodeText.checked;
-      const barcodeFont = toNumber(barcodeFontSize.value);
-      const labelFont = toNumber(labelFontSize.value);
-
-      setStatus(copyStatus, "");
-      labelCanvas.innerHTML = "";
+      copyStatus.textContent = "";
+      updateLabelText();
 
       if (!data) {
-        emptyMessage.hidden = false;
-        labelCanvas.appendChild(emptyMessage);
-        setStatus(validation, "바코드 데이터를 입력해주세요.", "error");
-        sizeNote.textContent = "";
+        barcodeSvg.innerHTML = "";
+        setStatus("바코드 데이터를 입력해주세요.");
         return;
       }
 
-      const validationResult = validateInputs();
-      if (!validationResult.valid) {
-        emptyMessage.hidden = false;
-        labelCanvas.appendChild(emptyMessage);
-        setStatus(validation, validationResult.message, "error");
-        sizeNote.textContent = "";
+      if (![barWidth, barHeight, barMargin, fontSize].every((value) => Number.isFinite(value) && value >= 0)) {
+        setStatus("옵션 값은 0 이상의 숫자여야 합니다.");
         return;
       }
 
-      if (!Number.isFinite(barcodeFont) || barcodeFont <= 0 || !Number.isFinite(labelFont) || labelFont <= 0) {
-        setStatus(validation, "폰트 크기는 0보다 큰 값을 입력해주세요.", "error");
-        return;
+      try {
+        JsBarcode(barcodeSvg, data, {
+          format: BARCODE_FORMAT,
+          lineColor: "#111827",
+          background: "#ffffff",
+          width: Math.max(0.1, barWidth),
+          height: Math.max(10, barHeight),
+          margin: Math.max(0, barMargin),
+          displayValue,
+          fontSize: Math.max(8, fontSize)
+        });
+        setStatus("");
+      } catch (error) {
+        barcodeSvg.innerHTML = "";
+        setStatus("바코드 생성에 실패했습니다. 입력 값을 확인해주세요.");
       }
-
-      const { widthCm, heightCm, dpi, margins } = validationResult;
-      const widthPx = cmToPx(widthCm, dpi);
-      const heightPx = cmToPx(heightCm, dpi);
-
-      const marginsPx = {
-        top: cmToPx(margins.top, dpi),
-        right: cmToPx(margins.right, dpi),
-        bottom: cmToPx(margins.bottom, dpi),
-        left: cmToPx(margins.left, dpi)
-      };
-
-      const labelGapPx = showLabel && label ? cmToPx(0.15, dpi) : 0;
-      const labelTextHeight = showLabel && label ? labelFont * 1.4 : 0;
-      const availableWidth = widthPx - marginsPx.left - marginsPx.right;
-      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight - labelGapPx;
-
-      if (availableWidth <= 0 || availableHeight <= 0) {
-        setStatus(validation, "여백 또는 라벨 텍스트 때문에 출력 영역이 부족합니다.", "error");
-        return;
-      }
-
-      if (availableWidth < 60 || availableHeight < 30) {
-        setStatus(validation, "크기를 키우세요. 현재 영역이 너무 작습니다.", "error");
-      } else {
-        setStatus(validation, "", "");
-      }
-
-      const svgString = buildLabelSvg({
-        data,
-        label,
-        widthPx,
-        heightPx,
-        marginsPx,
-        showLabel,
-        showBarcodeValue,
-        barcodeFont,
-        labelFont,
-        labelGapPx
-      });
-
-      labelCanvas.style.width = `${formatPx(widthPx)}px`;
-      labelCanvas.style.height = `${formatPx(heightPx)}px`;
-      labelCanvas.innerHTML = svgString;
-      sizeNote.textContent = `${widthCm}cm x ${heightCm}cm (DPI ${dpi}) → ${formatPx(widthPx)}px x ${formatPx(heightPx)}px`;
     }
 
-    function getCurrentLabelSvg() {
-      const svg = labelCanvas.querySelector("svg");
-      if (!svg) return null;
+    function getSvgString() {
+      if (!barcodeSvg || !barcodeSvg.firstChild) return null;
       const serializer = new XMLSerializer();
-      return serializer.serializeToString(svg);
+      return serializer.serializeToString(barcodeSvg);
     }
 
     function downloadBlob(blob, filename) {
@@ -644,18 +342,18 @@
       URL.revokeObjectURL(url);
     }
 
-    function svgToPng(svgString, width, height) {
+    function svgToPng(svgString) {
       return new Promise((resolve, reject) => {
         const img = new Image();
         const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
         const url = URL.createObjectURL(svgBlob);
 
         img.onload = () => {
-          canvas.width = width;
-          canvas.height = height;
+          canvas.width = img.width;
+          canvas.height = img.height;
           const ctx = canvas.getContext("2d");
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, width, height);
+          ctx.drawImage(img, 0, 0);
           canvas.toBlob((blob) => {
             URL.revokeObjectURL(url);
             if (blob) {
@@ -675,123 +373,76 @@
       });
     }
 
-    async function handleDownloadPng() {
-      const svgString = getCurrentLabelSvg();
+    async function handleDownloadSvg() {
+      const svgString = getSvgString();
       if (!svgString) {
-        setStatus(copyStatus, "PNG 다운로드 전에 미리보기를 생성해주세요.", "error");
+        copyStatus.textContent = "SVG 다운로드 전에 바코드를 생성해주세요.";
         return;
       }
-
-      const svg = labelCanvas.querySelector("svg");
-      const width = Number(svg.getAttribute("width"));
-      const height = Number(svg.getAttribute("height"));
-
-      try {
-        const pngBlob = await svgToPng(svgString, width, height);
-        const filename = `${sanitizeFilename(barcodeDataInput.value)}.png`;
-        downloadBlob(pngBlob, filename);
-        setStatus(copyStatus, "PNG 다운로드를 시작했습니다.", "success");
-      } catch (error) {
-        setStatus(copyStatus, "PNG 변환에 실패했습니다.", "error");
-      }
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
+      const filename = `${sanitizeFilename(barcodeInput.value)}.svg`;
+      downloadBlob(blob, filename);
+      copyStatus.textContent = "SVG 다운로드를 시작했습니다.";
     }
 
-    function handleDownloadSvg() {
-      const svgString = getCurrentLabelSvg();
+    async function handleDownloadPng() {
+      const svgString = getSvgString();
       if (!svgString) {
-        setStatus(copyStatus, "SVG 다운로드 전에 미리보기를 생성해주세요.", "error");
+        copyStatus.textContent = "PNG 다운로드 전에 바코드를 생성해주세요.";
         return;
       }
 
-      const blob = new Blob([svgString], { type: "image/svg+xml" });
-      const filename = `${sanitizeFilename(barcodeDataInput.value)}.svg`;
-      downloadBlob(blob, filename);
-      setStatus(copyStatus, "SVG 다운로드를 시작했습니다.", "success");
+      try {
+        const pngBlob = await svgToPng(svgString);
+        const filename = `${sanitizeFilename(barcodeInput.value)}.png`;
+        downloadBlob(pngBlob, filename);
+        copyStatus.textContent = "PNG 다운로드를 시작했습니다.";
+      } catch (error) {
+        copyStatus.textContent = "PNG 변환에 실패했습니다.";
+      }
     }
 
     async function handleCopyPng() {
-      const svgString = getCurrentLabelSvg();
+      const svgString = getSvgString();
       if (!svgString) {
-        setStatus(copyStatus, "복사 전에 미리보기를 생성해주세요.", "error");
+        copyStatus.textContent = "복사 전에 바코드를 생성해주세요.";
         return;
       }
 
       if (!navigator.clipboard || !window.ClipboardItem) {
-        setStatus(copyStatus, "이 브라우저에서는 PNG 복사가 지원되지 않습니다.", "error");
+        copyStatus.textContent = "이 브라우저에서는 PNG 복사가 지원되지 않습니다.";
         return;
       }
 
-      const svg = labelCanvas.querySelector("svg");
-      const width = Number(svg.getAttribute("width"));
-      const height = Number(svg.getAttribute("height"));
-
       try {
-        const pngBlob = await svgToPng(svgString, width, height);
+        const pngBlob = await svgToPng(svgString);
         await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob })]);
-        setStatus(copyStatus, "PNG가 클립보드에 복사되었습니다.", "success");
+        copyStatus.textContent = "PNG가 클립보드에 복사되었습니다.";
       } catch (error) {
-        setStatus(copyStatus, "클립보드 복사에 실패했습니다.", "error");
+        copyStatus.textContent = "클립보드 복사에 실패했습니다.";
       }
     }
 
-    function toggleMarginGrid() {
-      marginGrid.style.display = useAdvancedMargin.checked ? "grid" : "none";
-      marginGrid.setAttribute("aria-hidden", useAdvancedMargin.checked ? "false" : "true");
-    }
-
-    function applyPreset(presetKey) {
-      const preset = PRESETS[presetKey];
-      if (!preset) return;
-
-      widthCmInput.value = preset.widthCm;
-      heightCmInput.value = preset.heightCm;
-      marginAllInput.value = preset.marginCm;
-      dpiInput.value = preset.dpi;
-      showBarcodeText.checked = preset.showBarcodeText;
-      barcodeFontSize.value = preset.barcodeFontSize;
-      labelFontSize.value = preset.labelFontSize;
-      useAdvancedMargin.checked = false;
-      toggleMarginGrid();
-      updatePreview();
-    }
-
-    document.querySelectorAll("[data-preset]").forEach((button) => {
-      button.addEventListener("click", () => applyPreset(button.dataset.preset));
-    });
-
     const inputs = [
-      barcodeDataInput,
-      labelTextInput,
-      showLabelText,
-      showBarcodeText,
-      barcodeFontSize,
-      labelFontSize,
-      widthCmInput,
-      heightCmInput,
-      dpiInput,
-      marginAllInput,
-      marginTopInput,
-      marginRightInput,
-      marginBottomInput,
-      marginLeftInput
+      barcodeInput,
+      displayTextInput,
+      barWidthInput,
+      barHeightInput,
+      barMarginInput,
+      fontSizeInput,
+      displayValueToggle
     ];
 
     inputs.forEach((input) => {
-      input.addEventListener("input", updatePreview);
-      input.addEventListener("change", updatePreview);
+      input.addEventListener("input", updateBarcode);
+      input.addEventListener("change", updateBarcode);
     });
 
-    useAdvancedMargin.addEventListener("change", () => {
-      toggleMarginGrid();
-      updatePreview();
-    });
+    downloadSvgButton.addEventListener("click", handleDownloadSvg);
+    downloadPngButton.addEventListener("click", handleDownloadPng);
+    copyPngButton.addEventListener("click", handleCopyPng);
 
-    downloadPng.addEventListener("click", handleDownloadPng);
-    downloadSvg.addEventListener("click", handleDownloadSvg);
-    copyPng.addEventListener("click", handleCopyPng);
-
-    toggleMarginGrid();
-    updatePreview();
+    updateBarcode();
   </script>
 </body>
 </html>
