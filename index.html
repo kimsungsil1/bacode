@@ -383,6 +383,21 @@
       }, null);
     }
 
+    function fitSvgToContent(svgElement) {
+      if (!svgElement || !svgElement.firstChild) return;
+      const bbox = svgElement.getBBox();
+      const pad = 12;
+      const padBottom = 16;
+      const width = Math.max(0, bbox.width + pad * 2);
+      const height = Math.max(0, bbox.height + pad + padBottom);
+      const minX = bbox.x - pad;
+      const minY = bbox.y - pad;
+
+      svgElement.setAttribute("viewBox", `${minX} ${minY} ${width} ${height}`);
+      svgElement.setAttribute("width", String(width));
+      svgElement.setAttribute("height", String(height));
+    }
+
     function updateBarcode() {
       const data = barcodeInput.value.trim();
       const barWidth = toNumber(barWidthInput.value);
@@ -426,11 +441,6 @@
         removeExistingLabel();
 
         if (labelText && showLabel) {
-          const currentHeight = Number(barcodeSvg.getAttribute("height")) || 0;
-          const currentWidth = Number(barcodeSvg.getAttribute("width")) || 0;
-          const viewBox = barcodeSvg.getAttribute("viewBox");
-          const viewBoxParts = viewBox ? viewBox.split(/\s+/).map((value) => Number(value)) : [];
-          const viewBoxWidth = viewBoxParts.length === 4 ? viewBoxParts[2] : currentWidth;
           const valueTextElement = findValueTextElement(barcodeSvg);
           const valueTextY = valueTextElement
             ? Number.parseFloat(valueTextElement.getAttribute("y"))
@@ -453,16 +463,9 @@
           );
           textElement.textContent = labelText;
           barcodeSvg.appendChild(textElement);
-
-          const labelBox = textElement.getBBox();
-          const labelBottom = labelBox.y + labelBox.height;
-          const newHeight = Math.max(currentHeight, labelBottom);
-
-          barcodeSvg.setAttribute("height", String(newHeight));
-          if (viewBoxWidth) {
-            barcodeSvg.setAttribute("viewBox", `0 0 ${viewBoxWidth} ${newHeight}`);
-          }
         }
+
+        fitSvgToContent(barcodeSvg);
 
         setStatus("");
       } catch (error) {
@@ -488,18 +491,32 @@
       URL.revokeObjectURL(url);
     }
 
+    function getSvgDimensions(svgString) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgString, "image/svg+xml");
+      const svgElement = doc.querySelector("svg");
+      if (!svgElement) return { width: 0, height: 0 };
+      const width = Math.ceil(parseFloat(svgElement.getAttribute("width")) || svgElement.viewBox.baseVal.width || 0);
+      const height = Math.ceil(parseFloat(svgElement.getAttribute("height")) || svgElement.viewBox.baseVal.height || 0);
+      return { width, height };
+    }
+
     function svgToPng(svgString) {
       return new Promise((resolve, reject) => {
         const img = new Image();
         const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
         const url = URL.createObjectURL(svgBlob);
+        const { width, height } = getSvgDimensions(svgString);
 
         img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
+          const w = width || img.width;
+          const h = height || img.height;
+          canvas.width = w;
+          canvas.height = h;
           const ctx = canvas.getContext("2d");
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
           canvas.toBlob((blob) => {
             URL.revokeObjectURL(url);
             if (blob) {
