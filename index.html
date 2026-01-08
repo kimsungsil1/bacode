@@ -109,6 +109,16 @@
       flex-wrap: wrap;
     }
 
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .size-grid input {
+      width: 100%;
+    }
+
     .toggle {
       display: flex;
       align-items: center;
@@ -243,11 +253,15 @@
         </div>
 
         <h2>사이즈 & 여백</h2>
-        <div class="field inline">
-          <label for="width-cm">가로(cm)</label>
-          <input id="width-cm" type="number" min="0" step="0.1" value="6" />
-          <label for="height-cm">세로(cm)</label>
-          <input id="height-cm" type="number" min="0" step="0.1" value="3" />
+        <div class="size-grid">
+          <div class="field">
+            <label for="width-cm">가로(cm)</label>
+            <input id="width-cm" type="number" min="0" step="0.1" value="6" />
+          </div>
+          <div class="field">
+            <label for="height-cm">세로(cm)</label>
+            <input id="height-cm" type="number" min="0" step="0.1" value="3" />
+          </div>
         </div>
         <div class="field inline">
           <label for="dpi">DPI</label>
@@ -497,11 +511,12 @@
       showLabel,
       showBarcodeValue,
       barcodeFont,
-      labelFont
+      labelFont,
+      labelGapPx
     }) {
       const labelTextHeight = showLabel && label ? labelFont * 1.4 : 0;
       const availableWidth = widthPx - marginsPx.left - marginsPx.right;
-      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight;
+      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight - labelGapPx;
 
       const barcodeSvg = createBarcodeSvg(data, {
         displayValue: showBarcodeValue,
@@ -519,7 +534,7 @@
         .join("");
 
       const labelFontFamily = "Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif";
-      const labelTextY = marginsPx.top + availableHeight + labelFont;
+      const labelTextY = marginsPx.top + availableHeight + labelGapPx + labelFont;
       const labelText = showLabel && label ? `<text x="${widthPx / 2}" y="${labelTextY}" text-anchor="middle" font-size="${labelFont}" font-family="${labelFontFamily}" fill="#111827">${label}</text>` : "";
 
       return `<?xml version="1.0" encoding="UTF-8"?>
@@ -576,9 +591,10 @@
         left: cmToPx(margins.left, dpi)
       };
 
+      const labelGapPx = showLabel && label ? cmToPx(0.15, dpi) : 0;
       const labelTextHeight = showLabel && label ? labelFont * 1.4 : 0;
       const availableWidth = widthPx - marginsPx.left - marginsPx.right;
-      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight;
+      const availableHeight = heightPx - marginsPx.top - marginsPx.bottom - labelTextHeight - labelGapPx;
 
       if (availableWidth <= 0 || availableHeight <= 0) {
         setStatus(validation, "여백 또는 라벨 텍스트 때문에 출력 영역이 부족합니다.", "error");
@@ -600,7 +616,8 @@
         showLabel,
         showBarcodeValue,
         barcodeFont,
-        labelFont
+        labelFont,
+        labelGapPx
       });
 
       labelCanvas.style.width = `${formatPx(widthPx)}px`;
